@@ -15,14 +15,18 @@ class Dispatcher:
             return self.start_job(action)
     
     def send_message(self, job_id, message):
+        """Send message to Job
+        mocks up redis"""
         if job_id in self.jobs.keys():
-            self.jobs[job_id].message_queue.put(message)
+            self.jobs[job_id]._message_queue.put(message)
 
     def get_status(self, job_id):
+        """Get job status"""
         if job_id in self.jobs.keys():
             return self.jobs[job_id].status()
 
     def start_job(self, job_name):
+        """Start job in thread by Python class path"""
         klazz = Dispatcher.find_class(job_name)
         job = klazz()
         job_id = str(uuid.uuid4())
@@ -32,6 +36,7 @@ class Dispatcher:
         return job_id
 
     def find_class(path):
+        """Gets class from class path"""
         components = path.split('.')
         module = import_module('.'.join(components[:-1]))
         klazz = getattr(module, components[-1])
