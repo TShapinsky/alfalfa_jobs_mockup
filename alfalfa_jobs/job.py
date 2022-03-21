@@ -55,7 +55,7 @@ class Job:
         """Messages for job
         returns list of message handlers for job
         stop message is automatically supported"""
-        return [MessageHandler('stop', lambda self: self.stop(), '')]
+        return [MessageHandler('stop', lambda self: self.stop(), 'Stops Job')]
 
     def status(self) -> "JobStatus":
         """Get job status

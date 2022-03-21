@@ -3,6 +3,7 @@ from alfalfa_jobs import Dispatcher
 import json
 
 dispatcher = Dispatcher()
+Dispatcher.print_job("alfalfa_jobs.jobs.TestJob")
 # Send message to create job
 job_id = dispatcher.process_message(json.dumps({"op":"InvokeAction", "action":"alfalfa_jobs.jobs.TestJob"}))
 sleep(1)

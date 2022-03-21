@@ -42,3 +42,11 @@ class Dispatcher:
         klazz = getattr(module, components[-1])
         
         return klazz
+
+    def print_job(job_name):
+        klazz = Dispatcher.find_class(job_name)
+        print(f"Name: \t{klazz.name()}")
+        print(f"Description: \t{klazz.description()}")
+        print("Message Handlers:")
+        for message_handler in klazz.messages():
+            print(f"{message_handler.message_id}: \t {message_handler.doc_string}")
