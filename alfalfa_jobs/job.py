@@ -6,7 +6,12 @@ from typing import List
 from queue import SimpleQueue
 import alfalfa_jobs
 
+def message(func):
+    setattr(func,'message_handler', True)
+    return func
+
 class Job():
+
     def __init__(self):
         self._message_handlers = {}
         self._status = JobStatus.CREATED
@@ -44,28 +49,15 @@ class Job():
         called by start()"""
         pass
 
+    @message
     def stop(self) -> None:
         """Stop job"""
         self._status = JobStatus.STOPPING
-
+    
     def cleanup(self) -> None:
         """Clean up job
         called after stopping"""
         pass
-
-    def name(self) -> str:
-        """Job Name"""
-        raise NotImplementedError
-
-    def description(self) -> str:
-        """Job Description"""
-        raise NotImplementedError
-
-    def messages(self) -> List["MessageHandler"]:
-        """Messages for job
-        returns list of message handlers for job
-        stop message is automatically supported"""
-        return [MessageHandler('stop', self.stop, 'Stops Job')]
 
     def status(self) -> "JobStatus":
         """Get job status
@@ -73,8 +65,10 @@ class Job():
         return self._status
 
     def _setup_message_handlers(self):
-        for handler in self.messages():
-            self._message_handlers[handler.message_id] = handler.callback_func
+        for attr_name in dir(self):
+            attr = getattr(self, attr_name)
+            if hasattr(attr, 'message_handler'):
+                self._message_handlers[attr_name] = attr
 
     def _message_loop(self):
         while self._status.value < JobStatus.STOPPING.value:

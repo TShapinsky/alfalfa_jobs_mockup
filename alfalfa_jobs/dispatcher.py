@@ -45,10 +45,11 @@ class Dispatcher:
 
     def print_job(job_name):
         klazz = Dispatcher.find_class(job_name)
-        # Create an instance of the job witout calling the init to get doc fields
-        job_instance = Job.__new__(klazz)
-        print(f"Name: \t{job_instance.name()}")
-        print(f"Description: \t{job_instance.description()}")
+        print(f"Name: \t{klazz.__name__}")
+        print(f"Description: \t{klazz.__doc__}")
         print("Message Handlers:")
-        for message_handler in job_instance.messages():
-            print(f"{message_handler.message_id}: \t {message_handler.doc_string}")
+        print(dir(klazz))
+        for attr_name in dir(klazz):
+            attr = getattr(klazz, attr_name)
+            if hasattr(attr, 'message_handler'):
+                print(f"{attr.__name__}: \t {attr.__doc__}")

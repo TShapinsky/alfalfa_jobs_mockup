@@ -1,23 +1,18 @@
 from time import sleep
-from alfalfa_jobs.job import Job, MessageHandler
+from alfalfa_jobs.job import Job, message
 class TestJob(Job):
+    """Job to test functionality of the dispatcher"""
     def run(self) -> None:
         print("running!")
 
-    def name(self) -> str:
-        return "Test Job"
-
-    def description(self) -> str:
-        return "Job to test functionality of the dispatcher"
-    
+    @message
     def something(self):
+        """Does Something"""
         print("something")
         sleep(1)
 
+    @message
     def stop(self) -> None:
+        """Stop Job"""
         print("stopping")
         return super().stop()
-    
-    def messages(self):
-        # Message handlers are added to super().messages(), this inherits "stop" functionality
-        return super().messages() + [MessageHandler("something", self.something, "does something")]
