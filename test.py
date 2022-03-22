@@ -1,6 +1,9 @@
 from time import sleep
 from alfalfa_jobs import Dispatcher
 import json
+import os
+
+os.environ['THREADED_JOBS'] = '1'
 
 dispatcher = Dispatcher()
 Dispatcher.print_job("alfalfa_jobs.jobs.TestJob")

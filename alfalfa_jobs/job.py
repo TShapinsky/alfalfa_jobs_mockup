@@ -1,7 +1,7 @@
 from enum import Enum
 import threading
 from queue import SimpleQueue
-import alfalfa_jobs
+import os
 
 def message(func):
     """Decorator for methods which are triggered by messages.
@@ -25,7 +25,7 @@ class Job():
         return self
 
     def start(self):
-        if alfalfa_jobs.__threaded_jobs__:
+        if 'THREADED_JOBS' in os.environ.keys() and os.environ['THREADED_JOBS'] == '1':
             self.thread = threading.Thread(target=self._start)
             self.thread.start()
         else:
@@ -35,7 +35,6 @@ class Job():
         """Job workflow"""
         try:
             self._status = JobStatus.STARTING
-            #self._setup_message_handlers()
             self._status = JobStatus.RUNNING
             self.run()
             self._status = JobStatus.WAITING
