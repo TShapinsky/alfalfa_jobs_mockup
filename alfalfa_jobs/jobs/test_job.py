@@ -1,12 +1,12 @@
 from time import sleep
 from alfalfa_jobs.job import Job, message
 class TestJob(Job):
+    """Job to test functionality of the dispatcher"""
 
     # Because the base class uses the __new__ function to setup variables not calling init is inconsequential
     def __init__(self) -> None:
         pass
 
-    """Job to test functionality of the dispatcher"""
     def run(self) -> None:
         print("running!")
 
