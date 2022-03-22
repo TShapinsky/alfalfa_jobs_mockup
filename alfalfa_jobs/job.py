@@ -1,25 +1,28 @@
-from dataclasses import dataclass
 from enum import Enum
 import threading
-from types import FunctionType
-from typing import List
 from queue import SimpleQueue
 import alfalfa_jobs
 
 def message(func):
+    """Decorator for methods which are triggered by messages.
+    Overriding a function that has a decorator in the base class (like 'stop') will need to be decorated again."""
     setattr(func,'message_handler', True)
     return func
 
 class Job():
 
-    def __init__(self):
+    def __new__(cls):
+        self = super().__new__(cls)
         self._message_handlers = {}
         self._status = JobStatus.CREATED
         self._message_queue = SimpleQueue()
 
-    def setup(self, *args):
-        """setup variables and files for job"""
-        pass
+        for attr_name in dir(self):
+            attr = getattr(self, attr_name)
+            if hasattr(attr, 'message_handler'):
+                self._message_handlers[attr_name] = attr
+
+        return self
 
     def start(self):
         if alfalfa_jobs.__threaded_jobs__:
@@ -32,7 +35,7 @@ class Job():
         """Job workflow"""
         try:
             self._status = JobStatus.STARTING
-            self._setup_message_handlers()
+            #self._setup_message_handlers()
             self._status = JobStatus.RUNNING
             self.run()
             self._status = JobStatus.WAITING
@@ -64,12 +67,6 @@ class Job():
         gives general status of job workflow"""
         return self._status
 
-    def _setup_message_handlers(self):
-        for attr_name in dir(self):
-            attr = getattr(self, attr_name)
-            if hasattr(attr, 'message_handler'):
-                self._message_handlers[attr_name] = attr
-
     def _message_loop(self):
         while self._status.value < JobStatus.STOPPING.value:
             self._status = JobStatus.WAITING
@@ -77,13 +74,6 @@ class Job():
             if message in self._message_handlers.keys():
                 self._status = JobStatus.RUNNING
                 self._message_handlers[message]()
-
-@dataclass(frozen=True)
-class MessageHandler:
-    """Dataclass for message handler"""
-    message_id: str
-    callback_func: FunctionType
-    doc_string: str
 
 class JobStatus(Enum):
     """Enumeration of job states"""

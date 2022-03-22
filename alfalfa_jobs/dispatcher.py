@@ -48,7 +48,6 @@ class Dispatcher:
         print(f"Name: \t{klazz.__name__}")
         print(f"Description: \t{klazz.__doc__}")
         print("Message Handlers:")
-        print(dir(klazz))
         for attr_name in dir(klazz):
             attr = getattr(klazz, attr_name)
             if hasattr(attr, 'message_handler'):
