@@ -29,13 +29,14 @@ class Dispatcher:
 
     def start_job(self, job_name):
         """Start job in thread by Python class path"""
-        klazz = Dispatcher.find_class(job_name)
+        klazz = self.find_class(job_name)
         job = klazz()
         job_id = str(uuid.uuid4())
         self.jobs[job_id] = job
         job.start()
         return job_id
 
+    @staticmethod
     def find_class(path):
         """Gets class from class path"""
         components = path.split('.')
@@ -43,6 +44,7 @@ class Dispatcher:
         klazz = getattr(module, components[-1])
         return klazz
 
+    @staticmethod
     def print_job(job_name):
         klazz = Dispatcher.find_class(job_name)
         print(f"Name: \t{klazz.__name__}")

@@ -6,7 +6,7 @@ import os
 os.environ['THREADED_JOBS'] = '1'
 
 dispatcher = Dispatcher()
-Dispatcher.print_job("alfalfa_jobs.jobs.TestJob")
+dispatcher.print_job("alfalfa_jobs.jobs.TestJob")
 # Send message to create job
 job_id = dispatcher.process_message(json.dumps({"op":"InvokeAction", "action":"alfalfa_jobs.jobs.TestJob"}))
 sleep(1)
