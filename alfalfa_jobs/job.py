@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 from enum import Enum
+import threading
 from types import FunctionType
 from typing import List
 from queue import SimpleQueue
+import alfalfa_jobs
 
-class Job:
+class Job():
     def __init__(self):
         self._message_handlers = {}
         self._status = JobStatus.CREATED
@@ -14,7 +16,14 @@ class Job:
         """setup variables and files for job"""
         pass
 
-    def start(self) -> None:
+    def start(self):
+        if alfalfa_jobs.__threaded_jobs__:
+            self.thread = threading.Thread(target=self._start)
+            self.thread.start()
+        else:
+            self._start()
+
+    def _start(self) -> None:
         """Job workflow"""
         try:
             self._status = JobStatus.STARTING
@@ -27,6 +36,7 @@ class Job:
             self.cleanup()
             self._status = JobStatus.STOPPED
         except Exception as e:
+            print(e)
             self._status = JobStatus.ERROR
 
     def run(self) -> None:
@@ -43,19 +53,19 @@ class Job:
         called after stopping"""
         pass
 
-    def name() -> str:
+    def name(self) -> str:
         """Job Name"""
         raise NotImplementedError
 
-    def description() -> str:
+    def description(self) -> str:
         """Job Description"""
         raise NotImplementedError
 
-    def messages() -> List["MessageHandler"]:
+    def messages(self) -> List["MessageHandler"]:
         """Messages for job
         returns list of message handlers for job
         stop message is automatically supported"""
-        return [MessageHandler('stop', lambda self: self.stop(), 'Stops Job')]
+        return [MessageHandler('stop', self.stop, 'Stops Job')]
 
     def status(self) -> "JobStatus":
         """Get job status
@@ -63,10 +73,8 @@ class Job:
         return self._status
 
     def _setup_message_handlers(self):
-        for handler in self.__class__.messages():
-            message_id = handler.message_id
-            callback_func = handler.callback_func.__get__(self)
-            self._message_handlers[message_id] = callback_func
+        for handler in self.messages():
+            self._message_handlers[handler.message_id] = handler.callback_func
 
     def _message_loop(self):
         while self._status.value < JobStatus.STOPPING.value:

@@ -1,7 +1,9 @@
 import json
 from importlib import import_module
 import uuid
-import threading
+
+from alfalfa_jobs.job import Job
+
 class Dispatcher:
     def __init__(self):
         self.jobs = {}
@@ -31,8 +33,7 @@ class Dispatcher:
         job = klazz()
         job_id = str(uuid.uuid4())
         self.jobs[job_id] = job
-        job_thread = threading.Thread(target = job.start)
-        job_thread.start()
+        job.start()
         return job_id
 
     def find_class(path):
@@ -40,13 +41,14 @@ class Dispatcher:
         components = path.split('.')
         module = import_module('.'.join(components[:-1]))
         klazz = getattr(module, components[-1])
-        
         return klazz
 
     def print_job(job_name):
         klazz = Dispatcher.find_class(job_name)
-        print(f"Name: \t{klazz.name()}")
-        print(f"Description: \t{klazz.description()}")
+        # Create an instance of the job witout calling the init to get doc fields
+        job_instance = Job.__new__(klazz)
+        print(f"Name: \t{job_instance.name()}")
+        print(f"Description: \t{job_instance.description()}")
         print("Message Handlers:")
-        for message_handler in klazz.messages():
+        for message_handler in job_instance.messages():
             print(f"{message_handler.message_id}: \t {message_handler.doc_string}")
