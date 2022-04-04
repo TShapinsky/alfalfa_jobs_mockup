@@ -2,6 +2,7 @@ import json
 from importlib import import_module
 import uuid
 import os
+import alfalfa_jobs.job
 
 class Dispatcher:
     def __init__(self):
@@ -59,3 +60,8 @@ class Dispatcher:
             attr = getattr(klazz, attr_name)
             if hasattr(attr, 'message_handler'):
                 print(f"{attr.__name__}: \t {attr.__doc__}")
+
+    @staticmethod
+    def get_jobs():
+        for klazz in alfalfa_jobs.job.Job.jobs:
+            print(f"Name: \t {klazz.__name__}")

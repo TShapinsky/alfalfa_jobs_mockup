@@ -15,7 +15,7 @@ def message(func):
 class JobMetaclass(type):
 
     # Wrap Subclass __init__
-    def __new__(cls, name, base, cls_dicts):
+    def __new__(cls, name, bases, cls_dicts):
         if '__init__' in cls_dicts.keys():
             __old_init__ = cls_dicts['__init__']
         else:
@@ -34,7 +34,12 @@ class JobMetaclass(type):
             if __old_init__:
                 __old_init__(self, *args, **kwargs)
         cls_dicts['__init__'] = __new_init__
-        klazz = super().__new__(cls, name, base, cls_dicts)
+        klazz = super().__new__(cls, name, bases, cls_dicts)
+        
+        if len(bases) == 0:
+            klazz.jobs = []
+        if len(bases) > 0:
+            Job.jobs.append(klazz)
         return klazz
 
 class Job(metaclass=JobMetaclass):
