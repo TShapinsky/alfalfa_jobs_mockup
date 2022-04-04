@@ -4,12 +4,9 @@ import os
 class TestJob(Job):
     """Job to test functionality of the dispatcher"""
 
-    # Not sold on using an init for this, if we have parameters that need to go to the base class I don't really want the subclass to have to explicitly pass this
-    # possibly moving this into a setup() that is called with job params
+    # This is wrapped by the metaclass which pops off arguments which are not relevant to the job
     def __init__(self, interesting_info) -> None:
-
         print(interesting_info)
-        pass
 
     def run(self) -> None:
         print("running!")
@@ -31,8 +28,8 @@ class TestJob(Job):
         self.add_results_path('something/*')
         sleep(1)
 
-    # @message
-    # def stop(self) -> None:
-    #     """Stop Job"""
-    #     print("stopping")
-    #     return super().stop()
+    @message
+    def stop(self) -> None:
+        """Stop Job"""
+        print("stopping")
+        return super().stop()
