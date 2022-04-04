@@ -12,23 +12,32 @@ def message(func):
     setattr(func,'message_handler', True)
     return func
 
-class Job():
+class JobMetaclass(type):
 
-    # if job initialization is moved into a setup() this should become an __init__
-    def __new__(cls, working_dir, *args, **kwargs):
-        self = super().__new__(cls)
-        self._message_handlers = {}
-        self._status = JobStatus.CREATED
-        self._message_queue = SimpleQueue()
-        self._result_paths = []
-        self.working_dir = working_dir
+    # Wrap Subclass __init__
+    def __new__(cls, name, base, cls_dicts):
+        if '__init__' in cls_dicts.keys():
+            __old_init__ = cls_dicts['__init__']
+        else:
+            __old_init__ = None
+        def __new_init__(self, working_dir, *args, **kwargs):
+            self.working_dir = working_dir
+            self._message_handlers = {}
+            self._status = JobStatus.CREATED
+            self._message_queue = SimpleQueue()
+            self._result_paths = []
 
-        for attr_name in dir(self):
-            attr = getattr(self, attr_name)
-            if hasattr(attr, 'message_handler'):
-                self._message_handlers[attr_name] = attr
+            for attr_name in dir(self):
+                attr = getattr(self, attr_name)
+                if hasattr(attr, 'message_handler'):
+                    self._message_handlers[attr_name] = attr
+            if __old_init__:
+                __old_init__(self, *args, **kwargs)
+        cls_dicts['__init__'] = __new_init__
+        klazz = super().__new__(cls, name, base, cls_dicts)
+        return klazz
 
-        return self
+class Job(metaclass=JobMetaclass):
 
     def start(self, *args, **kwargs):
         if 'THREADED_JOBS' in os.environ.keys() and os.environ['THREADED_JOBS'] == '1':
