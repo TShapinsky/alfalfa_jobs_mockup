@@ -2,7 +2,7 @@ import json
 from importlib import import_module
 import uuid
 import os
-import alfalfa_jobs.job
+from alfalfa_jobs.job import Job
 
 class Dispatcher:
     def __init__(self):
@@ -63,5 +63,4 @@ class Dispatcher:
 
     @staticmethod
     def get_jobs():
-        for klazz in alfalfa_jobs.job.Job.jobs:
-            print(f"Name: \t {klazz.__name__}")
+        return Job.jobs.copy()
